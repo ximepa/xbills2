@@ -85,7 +85,6 @@ def client_errors(request, uid):
     user_errors = ErrorsLog.objects.filter(user=client.login).order_by(order_by)
     paginator = Paginator(user_errors, settings.USER_ERRORS_PER_PAGE)
     page = request.GET.get('page', 1)
-    dv_session = Dv_calls.objects.filter(uid=uid)
     try:
         errors = paginator.page(page)
     except PageNotAnInteger:
@@ -123,7 +122,6 @@ def client_statistics(request, uid):
     user_statistics = Dv_log.objects.filter(uid=uid).order_by(order_by)
     paginator = Paginator(user_statistics, settings.USER_ERRORS_PER_PAGE)
     page = request.GET.get('page', 1)
-    dv_session = Dv_calls.objects.filter(uid=uid)
     try:
         statistics = paginator.page(page)
     except PageNotAnInteger:
@@ -443,7 +441,6 @@ def client(request, uid):
     # streets = Street.objects.all()
     # houses = House.objects.all()
     # group = Group.objects.all()
-    dv_session = Dv_calls.objects.filter(uid=uid)
     # if helpers.module_check('olltv'):
         # from olltv.models import Iptv, IptvDevice, IptvDeviceType
         # from olltv.api import oll_user_info, oll_check_bundle, olltv_auth
@@ -479,7 +476,6 @@ def client(request, uid):
         user_password = client.get_hash_password
     else:
         user_password = ''
-    dv = Dv.objects.get(user=uid)
     # if helpers.module_check('claims'):
     #     from claims.models import Claims
     #     claims = Claims.objects.filter(uid=uid, state=1)
@@ -488,16 +484,15 @@ def client(request, uid):
 
 @login_required()
 def client_payments(request, uid):
-    dv_session = Dv_calls.objects.filter(uid=uid)
     out_sum = 0
     order_by = request.GET.get('order_by', '-date')
     try:
         client = User.objects.get(id=uid)
     except User.DoesNotExist:
         return render(request, '404.html', locals())
-    payments_list = Payment.objects.filter(uid=client.id).order_by(order_by)
-    for ex_payments in payments_list:
-        out_sum += ex_payments.sum
+    payments_list = Payment.objects.values('id', 'uid__login', 'uid__id', 'date', 'dsc', 'sum', 'last_deposit', 'aid__login', 'method').filter(uid=client.id).order_by(order_by)
+    for payment in payments_list:
+        out_sum += payment['sum']
     paginator = Paginator(payments_list, settings.PAYMENTS_PER_PAGE)
     page = request.GET.get('page', 1)
     if helpers.module_check('olltv'):
@@ -547,7 +542,6 @@ def client_payments(request, uid):
 
 @login_required()
 def client_fees(request, uid):
-    dv_session = Dv_calls.objects.filter(uid=uid)
     out_sum = 0
     order_by = request.GET.get('order_by', '-date')
     try:
@@ -651,7 +645,7 @@ def clients(request):
 @login_required()
 def payments(request):
     order_by = request.GET.get('order_by', '-date')
-    payments_list = Payment.objects.values('id', 'uid__login', 'uid__id', 'date', 'dsc', 'last_deposit', 'aid__login', 'method').order_by(order_by)
+    payments_list = Payment.objects.values('id', 'uid__login', 'uid__id', 'date', 'dsc', 'sum', 'last_deposit', 'aid__login', 'method').order_by(order_by)
     paginator = Paginator(payments_list, settings.PAYMENTS_PER_PAGE)
     page = request.GET.get('page', 1)
     try:
