@@ -1,0 +1,252 @@
+{% extends 'layout_edit.html' %}
+{% load i18n %}
+{% load staticfiles %}
+{% load url %}
+{% block extra_js %}
+{% endblock %}
+{% block extra_css %}
+{% endblock %}
+{% block breadcrumbs %}
+    <i class="right angle icon divider" xmlns="http://www.w3.org/1999/html"></i>
+    <a href="{% url 'core:clients' %}" class="section">{% trans 'Logins' %}</a>
+    <i class="right angle icon divider"></i>
+    <div class="active section"> <a href="{% url 'core:client' uid %}">{{ client.login }}</a> (UID: {{ uid }}) </div>
+{% endblock %}
+{% block breadcrumbs_sub_header %}
+    {% trans 'User Info' %}
+{% endblock %}
+{% block client_options %}
+    <div class="right header item">
+        {% trans 'Options' %}:
+    </div>
+    <a href="?{% url_replace request 'xml' '1' %}" target="_blank" class="item popup" data-content="{% trans 'Will be opened in new window' %}">
+        <i class="gamepad icon"></i>
+        Xml
+    </a>
+    <a href="?{% url_replace request 'csv' '1' %}" class="item">
+        <i class="video camera icon"></i>
+        Csv
+    </a>
+{% endblock client_options %}
+{% block content %}
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    <div class="ui top attached tabular menu">
+        <a class="active item" data-tab="client">{% trans 'User bill' %}</a>
+        <a class="item" data-tab="dv">{% trans 'Network' %}</a>
+        <a class="item" data-tab="user_pi">{% trans 'User Information' %}</a>
+    </div>
+    <div class="ui bottom attached active tab segment" data-tab="client">
+        <form class="ui form" method="POST">{% csrf_token %}
+            <div class="ui tiny stacked segment">
+                {# fields 1 #}
+                <div class="two fields">
+                    <div class="field">
+                        <label>{% trans 'Credit' %}</label>
+                        {{ client_form.credit }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Start credit date' %}</label>
+                        {{ client_form.credit_date }}
+                    </div>
+                    <script>
+                        $( function() {
+                            $( "#id_credit_date" ).datepicker({dateFormat: 'yy-mm-dd'});
+                        } );
+                    </script>
+                </div>
+                {# fields 2 #}
+                <div class="two fields">
+                    <div class="field">
+                        <label>{% trans 'Groups' %}</label>
+                        {{ client_form.gid }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Company' %}</label>
+                        {{ client_form.company }}
+                    </div>
+                </div>
+                {# fields 3 #}
+                <div class="two fields">
+                    <div class="field">
+                        <label>{% trans 'Discount' %} (%)</label>
+                        {{ client_form.reduction }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Start discount date' %}</label>
+                        {{ client_form.reduction_date }}
+                    </div>
+                    <script>
+                        $( function() {
+                            $( "#id_reduction_date" ).datepicker({dateFormat: 'yy-mm-dd'});
+                        } );
+                    </script>
+                </div>
+                {# fields 4 #}
+                <div class="two fields">
+                    <div class="field">
+                        <label>{% trans 'Activation' %}</label>
+                        {{ client_form.activate }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Expired' %}</label>
+                        {{ client_form.expire }}
+                    </div>
+                    <script>
+                        $( function() {
+                            $( "#id_activate" ).datepicker({dateFormat: 'yy-mm-dd'});
+                        } );
+                    </script>
+                    <script>
+                        $( function() {
+                            $( "#id_expire" ).datepicker({dateFormat: 'yy-mm-dd'});
+                        } );
+                    </script>
+                </div>
+                <div class="inline field">
+                    <div class="ui checkbox">
+                        {{ client_form.disable }}
+                        <label>{% trans 'Disable' %}</label>
+                    </div>
+                </div>
+                <button class="tiny ui teal submit button" name="client_form" value="change" type="submit">{% trans 'Change' %}</button>
+            </div>
+        </form>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="dv">
+        <form class="ui form" method="post">{% csrf_token %}
+            <div class="ui tiny stacked segment">
+                {# fields 1 #}
+                <div class="three fields">
+                    <div class="field">
+                        <label>{% trans 'Tarif plan' %}</label>
+                        {{ dv_form.tp }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Speed' %}</label>
+                        {{ dv_form.speed }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Simultaneously' %}</label>
+                        {{ dv_form.logins   }}
+                    </div>
+                </div>
+                {# fields 2 #}
+                <div class="three fields">
+                    <div class="field">
+                        <label>{% trans 'IP' %}</label>
+                        {{ dv_form.ip }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Netmask' %}</label>
+                        {{ dv_form.netmask }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'CID' %}</label>
+                        {{ dv_form.cid }}
+                    </div>
+                </div>
+                {# fields 3 #}
+{#                <div class="three fields">#}
+{#                    <div class="field">#}
+{#                        <label>{% trans 'IP' %}</label>#}
+{#                        {{ dv_form.ip }}#}
+{#                    </div>#}
+{#                    <div class="field">#}
+{#                        <label>{% trans 'Netmask' %}</label>#}
+{#                        {{ dv_form.netmask }}#}
+{#                    </div>#}
+{#                    <div class="field">#}
+{#                        <label>{% trans 'CID' %}</label>#}
+{#                        {{ dv_form.cid }}#}
+{#                    </div>#}
+{#                </div>#}
+                {# fields 4 #}
+{#                <div class="two fields">#}
+{#                    <div class="field">#}
+{#                        <label>{% trans 'Activation' %} (%)</label>#}
+{#                        {{ client_form.activate }}#}
+{#                    </div>#}
+{#                    <div class="field">#}
+{#                        <label>{% trans 'Expired' %}</label>#}
+{#                        {{ client_form.expire }}#}
+{#                    </div>#}
+{#                </div>#}
+                <div class="inline field">
+                    <div class="ui checkbox">
+{#                        {{ client_form.disabled }}#}
+                        <label>{% trans 'Disable' %}</label>
+                    </div>
+                </div>
+                <button class="tiny ui teal submit button" type="submit">{% trans 'Change' %}</button>
+            </div>
+        </form>
+    </div>
+    <div class="ui bottom attached tab segment" data-tab="user_pi">
+        <form class="ui form" method="post">{% csrf_token %}
+            <div class="ui tiny stacked segment">
+                {# fields 1 #}
+                <div class="four fields">
+                    <div class="field">
+                        <label>{% trans 'FIO' %}</label>
+                        {{ user_pi_form.fio }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Phone' %}</label>
+                        {{ user_pi_form.phone }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Phone' %} (2)</label>
+                        {{ user_pi_form.phone2   }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Email' %}</label>
+                        {{ user_pi_form.email }}
+                    </div>
+                </div>
+                {# fields 2 #}
+                <div class="four fields">
+                    <div class="field">
+                        <label>{% trans 'City' %}</label>
+                        {{ user_pi_form.district }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Street' %}</label>
+                        {{ user_pi_form.street }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Build' %}</label>
+                        {{ user_pi_form.location }}
+                    </div>
+                    <div class="field">
+                        <label>{% trans 'Flat' %}</label>
+                        {{ user_pi_form.kv }}
+                    </div>
+                </div>
+                <div class="four fields">
+                    <div class="field">
+                        <label>{% trans 'Contract Date' %}</label>
+                        {{ user_pi_form.contract_date }}
+                    </div>
+                    <script>
+                        $( function() {
+                            $( "#id_contract_date" ).datepicker({dateFormat: 'yy-mm-dd'});
+                        } );
+                    </script>
+                </div>
+                <div class="inline field">
+                    <div class="ui checkbox">
+{#                        {{ client_form.disable }}#}
+                        <label>{% trans 'Disable' %}</label>
+                    </div>
+                </div>
+                <button class="tiny ui teal submit button" name="user_pi" value="change" type="submit">{% trans 'Change' %}</button>
+            </div>
+        </form>
+    </div>
+{% endblock %}

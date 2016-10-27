@@ -1,0 +1,16 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load url %}
+{% load staticfiles %}
+{% block layout %}
+    <div class="row">
+        <div class="col-xs-12 col-sm-12 col-md-12">
+            <div class="panel panel-default">
+                {% block content %}
+                {% endblock %}
+            </div>
+        </div>
+    </div>
+    {% block extra_content %}
+    {% endblock %}
+{% endblock %}

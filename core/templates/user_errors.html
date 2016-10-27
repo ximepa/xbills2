@@ -1,0 +1,105 @@
+{% extends 'layout_edit.html' %}
+{% load i18n %}
+{% load url %}
+{% load staticfiles %}
+{% block breadcrumbs %}
+    <i class="right angle icon divider"></i>
+    <a href="{% url 'core:clients' %}" class="section">{% trans 'Logins' %}</a>
+    <i class="right angle icon divider"></i>
+    <div class="active section"> <a href="{% url 'core:client' uid %}">{{ client.login }}</a> (UID: {{ uid }}) </div>
+{% endblock %}
+{% block breadcrumbs_sub_header %}
+    {% trans 'User statistics error' %}
+{% endblock %}
+{% block client_options %}
+    {% if errors %}
+        <div class="right header item">
+            {% trans 'Options' %}:
+        </div>
+        <a href="?{% url_replace request 'xml' '1' %}" target="_blank" class="item popup" data-content="{% trans 'Will be opened in new window' %}">
+            <i class="gamepad icon"></i>
+            Xml
+        </a>
+        <a href="?{% url_replace request 'csv' '1' %}" class="item">
+            <i class="video camera icon"></i>
+            Csv
+        </a>
+        {% if errors.number == 1 %}
+            <div class="disabled item">
+                    1
+                </div>
+        {% endif %}
+        {% if errors.has_previous %}
+            <a href="?{% url_replace_page request 'page' '1' %}" class="item">1</a>
+            {% if errors.number > 7 %}
+                <div class="disabled item">
+                    ...
+                </div>
+            {% endif %}
+        {% endif %}
+        {% for p in page_list %}
+            {% if p == 1 %}
+            {% else %}
+                {% if errors.number == p %}
+                    <a class="item active" href="?{% url_replace_page request 'page' p %}">{{ p }}</a>
+                {% else %}
+                    <a class="item" href="?{% url_replace_page request 'page' p %}">{{ p }}</a>
+                {% endif %}
+            {% endif %}
+        {% endfor %}
+        {% if errors.has_next %}
+            {% if errors.number < errors.paginator.num_pages|add:"-5" %}
+                <div class="disabled item">
+                    ...
+                </div>
+                    <a class="item" href="?{% url_replace_page request 'page' errors.paginator.num_pages %}" aria-label="Next">
+                    {{ errors.paginator.num_pages }}
+                </a>
+            {% endif %}
+        {% endif %}
+    {% endif %}
+{% endblock client_options %}
+{% block content %}
+    <div class="row">
+        <div class="column">
+            {% if errors %}
+            <table class="ui blue small very compact selectable striped table">
+                <thead>
+                    <tr>
+                        <th><a href="?{% url_replace request 'order_by' 'date' %}">{% trans 'Date' %}</a></th>
+                        <th><a href="?{% url_replace request 'order_by' 'log_type' %}">{% trans 'Log type' %}</a></th>
+                        <th><a href="?{% url_replace request 'order_by' 'action' %}">{% trans 'Action' %}</a></th>
+                        <th><a href="?{% url_replace request 'order_by' 'user' %}">{% trans 'User' %}</a></th>
+                        <th><a href="?{% url_replace request 'order_by' 'message' %}">{% trans 'Message' %}</a></th>
+                        <th><a href="?{% url_replace request 'order_by' 'nas_id' %}">{% trans 'Nas ID' %}</a></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for e in errors %}
+                    <tr>
+                        <td>{{ e.date }}</td>
+                        <td>{{ e.log_type }}</td>
+                        <td>{{ e.action }}</td>
+                        <td>{{ e.user }}</td>
+                        {% if e.log_type == 4 %}
+                            <td style="color: red">{{ e.message }}</td>
+                        {% else %}
+                            <td>{{ e.message }}</td>
+                        {% endif %}
+                        <td>{{ e.nas_info.name }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="5"></td>
+                        <td><div class="ui blue tiny label">{% trans 'All' %} <div class="detail">{{ user_errors.count }}</div></div></td>
+                    </tr>
+                </tfoot>
+            </table>
+            {% else %}
+                {% trans 'User error not found' %}
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

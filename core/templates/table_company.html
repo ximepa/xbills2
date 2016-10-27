@@ -1,0 +1,55 @@
+{% load i18n %}
+{% load url %}
+{% load staticfiles %}
+<table class="ui blue small very compact selectable striped table">
+    <thead>
+        <tr>
+            <th><a href="?{% url_replace request 'order_by' 'id' %}">{% trans 'ID' %}</a></th>
+            <th><a href="?{% url_replace request 'order_by' 'name' %}">{% trans 'Name' %}</a></th>
+            <th><a href="?{% url_replace request 'order_by' 'bill__deposit' %}">{% trans 'Deposit' %}</a></th>
+            <th><a href="?{% url_replace request 'order_by' 'credit' %}">{% trans 'Credit' %}</a></th>
+            <th><a href="?{% url_replace request 'order_by' 'registration' %}">{% trans 'Registration' %}</a></th>
+            <th>{% trans 'Users' %}</th>
+            <th><a href="?{% url_replace request 'order_by' 'last_deposit' %}">{% trans 'Status' %}</a></th>
+            <th>-</th>
+            <th>-</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for c in company %}
+        <tr>
+            <td><a href="{% url 'core:company' %}?change={{ c.id }}">{{ c.id }}</a></td>
+            <td id='company-{{c.id}}'><a href=javascript:getCompany({{c.id}})>{{ c.name }}</a></td>
+            {% if c.bill.deposit > 0 and c.credit > 0 or c.bill.deposit > 0 and c.credit == 0 %}
+                <td><span style="color: green">{{ c.bill.deposit }}</span></td>
+            {% elif c.bill.deposit < 0 and c.credit < 0 or c.bill.deposit < 0 and c.credit == 0 %}
+                <td><span style="color: red">{{ c.bill }}</span></td>
+            {% else %}
+                <td>{{ c.bill }}</td>
+            {% endif %}
+            {% if c.credit > 0 %}
+                <td><span style="color: green">{{ c.credit }}</span></td>
+            {% else %}
+                <td>{{ c.credit }}</td>
+            {% endif %}
+            <td>{{ c.registration }}</td>
+            <td>{% user_company c.id %}</td>
+            <td>{% status c.disable %}</td>
+
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+{#            <th><div class="ui blue tiny label">{% trans 'Sum' %}<div class="detail">{{ out_sum }}</div></div></th>#}
+            <th></th>
+            <th></th>
+{#            <th><div class="ui blue tiny label">{% trans 'All' %} <div class="detail">{{ fees_list.count }}</div></div></th>#}
+            <th></th>
+        </tr>
+    </tfoot>
+</table>

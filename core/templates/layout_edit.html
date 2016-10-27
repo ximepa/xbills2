@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load url %}
+{% load staticfiles %}
+{% block layout %}
+    <div class="row">
+        <div class="column">
+            <div class="ui stackable top attached mini tabular menu">
+                <div class="{% active request 'core:client' uid %} {% active request 'core:client_statistics' uid %} item"><a href="{% url 'core:client' uid %}"><i class="fa fa-info" aria-hidden="true"></i> {% trans 'Base' %}</a></div>
+                <div class="{% active request 'core:client_payments' uid %} item"><a href="{% url 'core:client_payments' uid %}">{% trans 'Payments' %}</a></div>
+                <div class="{% active request 'core:client_fees' uid %} item"><a href="{% url 'core:client_fees' uid %}">{% trans 'Fees' %}</a></div>
+                {% check_module 'olltv' as check_module_olltv %}
+                {% if check_module_olltv %}
+                        <div class="{% if auth %}{% active request 'olltv:user_olltv' uid %}{% else %}disabled{% endif %} item">{% if auth %}<a href="{% url 'olltv:user_olltv' uid %}"><i class="fa fa-television" aria-hidden="true"></i> {% trans 'OLLTV' %}</a>{% else %}<a href="#"><i class="fa fa-television" aria-hidden="true"></i> {% trans 'OLLTV' %}</a>{% endif %}</div>
+                {% endif %}
+                {% check_module 'ipdhcp' as check_module_dhcp %}
+                {% if check_module_dhcp %}
+                        <div class="{% active request 'core:user_dhcp' uid %} item"><a href="{% url 'core:user_dhcp' uid %}"><i class="fa fa-television" aria-hidden="true"></i> {% trans 'Dhcp' %}</a></div>
+                {% endif %}
+                {% check_module 'claims' as check_module_claims %}
+                {% if check_module_claims %}
+                        <div class="{% active request 'core:user_claims' uid %} item"><a href="{% url 'core:user_claims' uid %}"><i class="fa fa-wpforms fa-fw" aria-hidden="true"></i>{% trans 'Claims' %}</a></div>
+                {% endif %}
+            </div>
+            <div class="ui bottom attached active tab segment">
+                <div class="ui sticky stackable mini menu">
+                    <a class="item" id="session">
+                        {% if dv_session %}
+                            <div class="floating ui mini green label">
+                                {{ dv_session.count }}
+                            </div>
+                            <i class="idea orange icon"></i>
+                        {% else %}
+                            <i class="idea icon"></i>
+                        {% endif %}
+                        {% trans 'Sessions' %}
+                    </a>
+                    <a href="{% url 'core:client_statistics' uid %}" class="{% active request 'core:client_statistics' uid %} item">
+                        <i class="idea icon"></i>
+                        {% trans 'Statistics' %}
+                    </a>
+                    <a href="{% url 'core:client_errors' uid %}" class="{% active request 'core:client_errors' uid %} item">
+                        <i class="idea icon"></i>
+                        {% trans 'Error' %}
+                    </a>
+                    <div id="browse" class="ui flowing mini popup">
+                        <div class="ui column stacked grid">
+                            <div class="ui segment">
+                                {% if dv_session %}
+                                    <table class="ui {{ request.user.theme }} small selectable striped table">
+                                        <thead class="">
+                                            <tr>
+                                                <th>IP</th>
+                                                <th>{% trans 'Time' %}</th>
+                                                <th>In</th>
+                                                <th>Out</th>
+                                                <th>{% trans 'Server' %}</th>
+                                                <th>{% trans 'Zap' %}</th>
+                                                <th>{% trans 'Hangup' %}</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for s in dv_session %}
+                                                <tr>
+                                                    <td>
+                                                        {% ip_convert s.framed_ip_address %}
+                                                    </td>
+                                                    <td>
+                                                        {% convert_timestamp_to_time s.started %}
+                                                    </td>
+                                                    <td>
+                                                        {% convert_bytes s.acct_input_octets s.acct_input_gigawords%}
+                                                    </td>
+                                                    <td>
+                                                        {% convert_bytes s.acct_output_octets s.acct_output_gigawords%}
+                                                    </td>
+                                                    <td>
+                                                        {{ s.nas.name }}
+                                                    </td>
+                                                    <td>
+                                                        <a class="btn btn-xs btn-link" href="#">
+                                                            <span class="fa fa-times fa-fw"></span>
+                                                        </a>
+                                                    </td>
+                                                    <td>
+                                                        <a class="btn btn-xs btn-link" href="?hangup&acct_session_id={{ s.acct_session_id }}&nas_id={{ s.nas_id }}&port_id={{ s.nas_port_id }}&user_name={{ s.user_name }}"><span class="fa fa-power-off fa-fw"></span></a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    {% trans 'No Sessions' %}
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="ui basic modal">
+                        <i class="close icon"></i>
+                        <div class="header">
+                            {% trans 'Comments' %}
+                        </div>
+                        <form class="ui form" method="post">{% csrf_token %}
+                            <div class="content">
+                                <h4 class="ui dividing header">Give us your feedback</h4>
+                                <div class="field">
+                                    <label>Feedback</label>
+                                    <textarea name="comment" data-value="">{{ user_pi.comments }}</textarea>
+                                </div>
+                                <div class="field">
+                                </div>
+                            </div>
+                            <div class="actions">
+                                <div class="two fluid ui inverted buttons">
+                                    <div class="ui cancel red basic inverted button">
+                                        <i class="remove icon"></i>
+                                        No
+                                    </div>
+                                    <button class="ui ok green basic inverted button" name="comments" value="change" type="submit">
+                                        <i class="checkmark icon"></i>
+                                        Yes
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <div class="centers menu">
+                        <div class="ui dropdown item" onclick="$('.ui.basic.modal').modal('show')">
+                            <i class="fa fa-comment"></i>
+                        </div>
+                    </div>
+                    <div class="right menu">
+                        <div class="ui dropdown item">
+                            {{ request.user.login }}
+                            <i class="dropdown icon"></i>
+                            <div class="menu">
+                                <a class="item" href="{% url 'core:administrator_edit' request.user %}">{% trans 'Profile' %}</a>
+                                <a class="item" href="{% url 'core:logout' %}">{% trans 'Logout' %}</a>
+                            </div>
+                        </div>
+                    </div>
+                    {% block client_options %}
+                    {% endblock client_options %}
+                </div>
+                <div class="ui stackable grid">
+	                <div class="row">
+                        <div class="three wide column">
+                            <div class="ui secondary segment">
+                                <div class="ui form">
+                                    <div class="field">
+                                        <a class="ui grey ribbon label">{% trans 'General Information' %}</a>
+                                        <div class="ui middle aligned divided list">
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="user icon"></i>
+                                                    <span style="font-weight: bold">{{ client.user_pi.fio }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="user icon"></i>{% trans 'Username' %}:
+                                                    <span style="font-weight: bold">{{ client.login }}</span>
+                                                </div>
+                                            </div>
+                                            {% if client.dv %}
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="user icon"></i>{% trans 'Tarif' %}:
+                                                    <span style="font-weight: bold">{{ client.dv.tp.name }} {% if client.dv.tp.month_fee != 0 %}({{ client.dv.tp.month_fee }})M{% else %}({{ client.dv.tp.day_fee }})D{% endif %}</span>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="money icon"></i>{% trans 'Deposit' %} :
+                                                    {% if client.credit > client.bill.deposit and client.credit > 0 %}
+                                                        <a class="ui grey label" >{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% elif client.bill.deposit > 50 %}
+                                                        <a class="ui green label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% elif client.bill.deposit < 50 and client.bill.deposit > 20 %}
+                                                        <a class="ui label {{ request.user.theme }} label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% elif client.bill.deposit < 20 and client.bill.deposit > 2.50 %}
+                                                        <a class="ui label orange label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% else %}
+                                                        <a class="ui label red label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="credit card alternative icon"></i>{% trans 'Credit' %} :
+                                                    {% if client.credit > 0 %}
+                                                        <a class="ui green label" >{{ client.credit|floatformat:2 }}</a>
+                                                    {% else %}
+                                                        <a class="ui label">{{ client.credit|floatformat:2 }}</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Bill ID' %} :
+                                                    {% if client.bill.id %}
+                                                        <a class="ui {{ request.user.theme }} label" >{{ client.bill.id }}</a>
+                                                    {% else %}
+                                                        <a class="ui {{ request.user.theme }} label" >{{ client.company.bill_id }}</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if client.company %}
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Company' %} :
+                                                    <a class="ui {{ request.user.theme }} label">{{ client.company.name }}</a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Group' %} :
+                                                    <a class="ui {{ request.user.theme }} label" >{{ client.gid }}</a>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <i class="marker icon"></i>
+                                                <div class="content">
+                                                    {{ client.user_pi.street.district.name }}
+                                                    {% if client.user_pi.street %}
+                                                        , {{ client.user_pi.street.name }}
+                                                        {% if client.user_pi.location %}
+                                                            {{ client.user_pi.location }}
+                                                        {% endif %}
+                                                        {% if client.user_pi.kv %}
+                                                            _ {{ client.user_pi.kv }}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <i class="mail icon"></i>
+                                                <div class="content">
+                                                    <a href="mailto:{{ client.user_pi.email }}">{{ client.user_pi.email }}</a>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="registered icon"></i>{% trans 'Registration' %} :
+                                                    <label>{{ client.registration }}</label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <a class="ui {{ request.user.theme }} ribbon label" onclick="servicesToggle()">Community</a>
+                                        <div class="ui middle aligned divided list" id="services" style="display: none">
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'FIO' %} :
+                                                    <span style="font-weight: bold">{{ client.user_pi.fio }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Deposit' %} :
+                                                    {% if client.credit > client.bill.deposit and client.credit > 0 %}
+                                                        <a class="ui grey label" >{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% elif client.bill.deposit > 50 %}
+                                                        <a class="ui green label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% elif client.bill.deposit < 50 and client.bill.deposit > 20 %}
+                                                        <a class="ui label {{ request.user.theme }} label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% elif client.bill.deposit < 20 and client.bill.deposit > 2.50 %}
+                                                        <a class="ui label orange label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% else %}
+                                                        <a class="ui label red label">{{ client.bill.deposit|floatformat:2 }}</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Credit' %} :
+                                                    {% if client.credit > 0 %}
+                                                        <a class="ui green label" >{{ client.credit|floatformat:2 }}</a>
+                                                    {% else %}
+                                                        <a class="ui label">{{ client.credit|floatformat:2 }}</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Bill ID' %} :
+                                                    {% if client.bill.id %}
+                                                        <a class="ui {{ request.user.theme }} label" >{{ client.bill.id }}</a>
+                                                    {% else %}
+                                                        <a class="ui {{ request.user.theme }} label" >{{ client.company.bill_id }}</a>
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            {% if client.company %}
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Company' %} :
+                                                    <a class="ui {{ request.user.theme }} label">{{ client.company.name }}</a>
+                                                </div>
+                                            </div>
+                                            {% endif %}
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="users icon"></i>{% trans 'Group' %} :
+                                                    <a class="ui {{ request.user.theme }} label" >{{ client.gid }}</a>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <i class="marker icon"></i>
+                                                <div class="content">
+                                                    {{ client.user_pi.city }}
+                                                    {% if client.user_pi.street %}
+                                                        , {{ client.user_pi.street.name }}
+                                                        {% if client.user_pi.location %}
+                                                            {{ client.user_pi.location }}
+                                                        {% endif %}
+                                                        {% if client.user_pi.kv %}
+                                                            {% trans 'flat' %} {{ client.user_pi.kv }}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <i class="mail icon"></i>
+                                                <div class="content">
+                                                    <a href="mailto:{{ client.user_pi.email }}">{{ client.user_pi.email }}</a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="thirteen wide column">
+                            <div class="ui secondary segment">
+                                {% block content %}
+                                {% endblock %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="ui stackable grid">
+        {% block extra_content %}
+        {% endblock %}
+    </div>
+{% endblock %}

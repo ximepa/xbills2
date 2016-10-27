@@ -1,0 +1,61 @@
+{% load i18n %}
+{% load staticfiles %}
+{% load url %}
+{% load project %}
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+
+    <title>{% block title %}Xbills v0.0.7{% endblock %}</title>
+
+    <link href="{% static 'semantic-ui/semantic.css' %}" rel="stylesheet" type="text/css">
+    <script src="{% static 'semantic-ui/semantic.min.js' %}"></script>
+</head>
+
+<style type="text/css">
+    body {
+        background-color: #DADADA;
+    }
+    body > .grid {
+        height: 100%;
+    }
+    .image {
+        margin-top: -100px;
+    }
+    .column {
+        max-width: 450px;
+    }
+</style>
+
+<body id="content" class="texture">
+    <div class="ui middle aligned center aligned grid">
+        <div class="column">
+            {% if error %}
+                <div class="ui negative message">
+                    <i class="close icon"></i>
+                    <div class="header">{% trans 'Warning' %}!</div>
+                    <p>{{ error }}</p>
+                </div>
+            {% endif %}
+            <form class="ui large form" method="post">{% csrf_token %}
+                <div class="ui stacked segment">
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="user icon"></i>
+                            <input name="username" placeholder="{% trans 'Username' %}" type="text">
+                        </div>
+                    </div>
+                    <div class="field">
+                        <div class="ui left icon input">
+                            <i class="lock icon"></i>
+                            <input name="password" placeholder="{% trans 'Password' %}" type="password">
+                        </div>
+                    </div>
+                    <button class="ui fluid large teal submit button" type="submit">Login</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

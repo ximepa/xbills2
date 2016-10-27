@@ -1,0 +1,223 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load url %}
+{% load staticfiles %}
+{% block breadcrumbs %}
+    <i class="right angle icon divider"></i>
+    <div class="section">{% trans 'Settings' %}</div>
+    <i class="right angle icon divider"></i>
+    <a href="{% url 'core:servers' %}" class="section">{% trans 'Servers' %}</a>
+{% endblock %}
+{% block breadcrumbs_sub_header %}
+    {% trans 'Edit Servers' %}
+{% endblock %}
+{% block layout %}
+    <div class="row">
+        <div class="column">
+            <div class="ui blue mini segment">
+{#                <div class="panel-heading hidden-print">#}
+{#                    <div class="btn-group btn-group-xs" role="group">#}
+{#                    </div>#}
+{#                    <div class="btn-group pull-left">#}
+{#                        <a title="Добавить" class="hidden-print" data-toggle="modal" data-target="#server_add" href="#"><span class="glyphicon glyphicon-plus"></span></a>#}
+{#                        <div class="modal fade" id="server_add" role="dialog" aria-hidden="true">#}
+{#                            <div class="modal-dialog modal-title">#}
+{#                                <div class="modal-content">#}
+{#                                    <div class="modal-header">Сервер доступа#}
+{#                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">#}
+{#                                        <span aria-hidden="true">&times;</span>#}
+{#                                    </button>#}
+{#                                    </div>#}
+{#                                    <div class="modal-body text-left" id="nestedform">#}
+{#                                        <form class="form-horizontal" method="post" name="form_server">{% csrf_token %}#}
+{#                                            <div class="panel panel-default panel-form">#}
+{#                                                <div class="form-group">#}
+{#                                                    <label class="control-label col-md-3 required" for="server_ip">IP:</label>#}
+{#                                                    <div class="col-md-9">#}
+{#                                                        <input id="server_ip" name="server_ip" value="" placeholder="{% trans 'Server IP' %}" class="form-control" type="text">#}
+{#                                                    </div>#}
+{#                                                    <label class="control-label col-md-3" for="server_name">{% trans 'Server name' %}</label>#}
+{#                                                    <div class="col-md-9">#}
+{#                                                        <input id="server_name" name="server_name" value="" placeholder="{% trans 'Server name' %}" class="form-control" type="text">#}
+{#                                                    </div>#}
+{#                                                </div>#}
+{#                                                <div class="form-group">#}
+{#                                                    <label class="col-md-12 bg-primary">Управление</label>#}
+{#                                                    <label class="control-label col-md-3" for="server_ip_port">IP:PORT</label>#}
+{#                                                    <div class="col-md-9">#}
+{#                                                        <input id="server_ip_port" name="server_ip_port" value="" placeholder="" class="form-control" type="text">#}
+{#                                                    </div>#}
+{#                                                    <label class="control-label col-md-3" for="user_name">{% trans 'User name' %}:</label>#}
+{#                                                    <div class="col-md-9">#}
+{#                                                        <input id="user_name" name="user_name" value="" placeholder="{% trans 'User name' %}" class="form-control" type="text">#}
+{#                                                    </div>#}
+{#                                                    <label class="control-label col-md-3" for="server_password">{% trans 'Password' %}:</label>#}
+{#                                                    <div class="col-md-9">#}
+{#                                                        <input id="server_password" name="server_password" value="" placeholder="{% trans 'Password' %}" class="form-control" type="password">#}
+{#                                                    </div>#}
+{#                                                </div>#}
+{#                                            </div>#}
+{#                                            <hr>#}
+{#                                            <div class="row text-center">#}
+{#                                                <input id="show_cols" name="show_cols" class="btn btn-primary" value="{% trans 'Add' %}" type="submit">#}
+{#                                            </div>#}
+{#                                        </form>#}
+{#                                    </div>#}
+{#                                </div>#}
+{#                            </div>#}
+{#                        </div>#}
+{#                    </div>#}
+{#                </div>#}
+                {% if servers %}
+                    <table class="ui blue small very compact selectable striped table" id="NAS_LIST_">
+                        <thead>
+                        <tr>
+                            <th>
+                                <script>
+                                    $( document ).ready(function() {
+                                        $('#checkAll').click(function () {
+                                            $('input:checkbox[id^="NAS_ID"]').not(this).prop('checked', this.checked);
+                                        })
+                                    });
+                                </script>
+                                <input type='checkbox' id='checkAll'/>
+                            </th>
+                            <th class="text-center"><a title="ID" href="" >ID</a></th>
+                            <th class="text-center"><a title="Название" href="" >Название</a></th>
+                            <th class="text-center"><a title="NAS-Identifier" href="" >NAS-Identifier</a></th>
+                            <th class="text-center"><a title="ip" href="" >ip</a></th>
+                            <th class="text-center"><a title="Тип" href="" >Тип</a></th>
+                            <th class="text-center"><a title="Отключено" href="" >Отключено</a></th>
+                            <th class="text-center"><a title="Описание" href="" >Описание</a></th>
+                            <th class="text-center">-</th>
+                            <th class="text-center">-</th>
+                        </tr>
+                        </thead>
+                        {% for server in servers %}
+                        <tr>
+                            <td><input type='checkbox' name='NAS_ID' value="{{ admin.id }}" id='NAS_ID'></td>
+                            <td> {{ server.id }} </td>
+                            <td> {{ server.name }} </td>
+                            <td> {{ server.server_identifier }} </td>
+                            <td> {{ server.ip }} </td>
+                            <td> {{ server.server_type }} </td>
+                            {% if server.disable == 0 %}
+                                <td><span class="ui green label">{% trans 'Active' %}</span></td>
+                            {% else %}
+                                <td><span class="ui red label">{% trans 'Disabled' %}</span></td>
+                            {% endif %}
+                            <td> {{ server.descr }} </td>
+                            <td><a title="Пользователи" class='btn btn-default btn-xs' href="?sessions={{ server.id }}" >Пользователи</a></td>
+                            <td><a title="IP_Pool" class='btn btn-default btn-xs'>IP_Pool</a></td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                {% else %}
+                    {% trans 'Servers not found' %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% if sessions %}
+        {% if error %}
+        {% else %}
+            <div class="row">
+                <div class="column">
+                    <div class="ui tiny stacked segment">
+                        <div class="ui sticky mini fluid pagination menu">
+                            <div class="header item">{% trans 'Export' %}</div>
+                            <a href="?{% url_replace request 'xml' '1' %}" target="_blank" class="item popup" data-content="{% trans 'Will be opened in new window' %}">
+                                <i class="gamepad icon"></i>
+                                Xml
+                            </a>
+                            <a href="?{% url_replace request 'csv' '1' %}" class="item">
+                                <i class="video camera icon"></i>
+                                Csv
+                            </a>
+                            <div class="header right floated item">{% trans 'Pagination' %}</div>
+                            {% if sespage.number == 1 %}
+                                <div class="disabled item">
+                                    1
+                                </div>
+                            {% endif %}
+                            {% if sespage.has_previous %}
+                                <a href="?{% url_replace_page request 'page' '1' %}" class="item">1</a>
+                                {% if sespage.number > 7 %}
+                                    <div class="disabled item">
+                                        ...
+                                    </div>
+                                {% endif %}
+                            {% endif %}
+                            {% for p in page_list %}
+                                {% if p == 1 %}
+                                {% else %}
+                                    {% if sespage.number == p %}
+                                        <a class="item active" href="?{% url_replace_page request 'page' p %}">{{ p }}</a>
+                                    {% else %}
+                                        <a class="item" href="?{% url_replace_page request 'page' p %}">{{ p }}</a>
+                                    {% endif %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if sespage.has_next %}
+                                {% if sespage.number < sespage.paginator.num_pages|add:"-5" %}
+                                    <div class="disabled item">
+                                        ...
+                                    </div>
+                                    <a class="item" href="?{% url_replace_page request 'page' sespage.paginator.num_pages %}" aria-label="Next">
+                                        {{ sespage.paginator.num_pages }}
+                                    </a>
+                                {% endif %}
+                            {% endif %}
+                        </div>
+                        <table class="ui blue small very compact selectable striped table">
+                            <thead>
+                                <tr role="row">
+                                    <th>{% trans 'Login' %}</th>
+                                    <th>{% trans 'FIO' %}</th>
+                                    <th>{% trans 'CID' %}</th>
+                                    <th>{% trans 'Deposit' %}</th>
+                                    <th>{% trans 'Credit' %}</th>
+                                    <th>{% trans 'Login status' %}</th>
+                                    <th>{% trans 'Deleted' %}</th>
+                                    <th>{% trans '-' %}</th>
+                                    <th>{% trans '-' %}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for session in sespage %}
+                                <tr>
+                                    <td><a href="{% url 'core:clients' %}{{ session.uid.id }}">{{ session.user_name }}</a></td>
+                                    <td>{{ session.uid.pi.fio }}</td>
+                                    <td>{{ session.CID }}</td>
+                                    {% if session.uid.bill.deposit < 0 %}
+                                        <td><span class="label label-danger">{{ session.uid.bill.deposit }}</span></td>
+                                    {% else %}
+                                        <td>{{ session.uid.bill.deposit }}</td>
+                                    {% endif %}
+                                    {% if user.credit > 0 %}
+                                        <td><span class="label label-success">{{ user.credit }}</span></td>
+                                    {% else %}
+                                        <td>{{ user.credit }}</td>
+                                    {% endif %}
+                                    {% if user.disabled %}
+                                        <td><span class="ui red label">{% trans 'Disabled' %}</span></td>
+                                    {% else %}
+                                        <td><span class="ui green label">{% trans 'Active' %}</span></td>
+                                    {% endif %}
+                                    {% if user.deleted %}
+                                        <td><span class="ui red label">{% trans 'Yes' %}</span></td>
+                                    {% else %}
+                                        <td><span class="ui green label">{% trans 'No' %}</span></td>
+                                    {% endif %}
+                                    <td><a href="{% url 'core:payments' %}{{ session.uid.id }}"><i class="fa fa-pencil-square-o fa-fw"></i></a></td>
+                                    <td><a href="{% url 'core:fees' %}{{ session.uid.id }}"><i class="fa fa-remove"></i></a></td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+    {% endif %}
+{% endblock %}

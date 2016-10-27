@@ -1,0 +1,53 @@
+{% load i18n %}
+{% load url %}
+{% load staticfiles %}
+<table class="ui blue small very compact selectable striped table">
+    <thead>
+        <tr class="">
+            <th>{% trans 'Number' %}</th>
+            <th>{% trans 'Login' %}</th>
+            <th>{% trans 'Date' %}</th>
+            <th>{% trans 'Description' %}</th>
+            <th>{% trans 'Sum' %}</th>
+            <th>{% trans 'Deposit' %}</th>
+            <th>{% trans 'Payments type' %}</th>
+            <th>{% trans 'Administrator' %}</th>
+            <th>UID</th>
+            <th>-</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for payment in payments %}
+        <tr>
+            <td>{{ payment.id }}</td>
+            <td><a href="{% url 'core:clients' %}{{ payment.uid.id }}">{{ payment.uid.login }}</a></td>
+            <td>{{ payment.date }}</td>
+            <td>{{ payment.dsc }}</td>
+            <td>{{ payment.sum }}</td>
+            {% if payment.last_deposit < 0 %}
+                <td><span style="color: red">{{ payment.last_deposit }}</span></td>
+            {% else %}
+                <td>{{ payment.last_deposit }}</td>
+            {% endif %}
+            <td>{% pay_type  payment.method %}</td>
+            <td>{{ payment.aid.login }}</td>
+            <td>{{ payment.uid.id }}</td>
+            <td><a href="{% url 'core:client_payments' payment.uid.id %}?del={{ payment.id }}" onclick="return confirm('{% trans 'Delete' %}?');"><i class="fa fa-remove"></i></a></td>
+        </tr>
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th><div class="ui blue tiny label">{% trans 'Sum' %}<div class="detail">{{ out_sum }}</div></div></th>
+            <th></th>
+            <th></th>
+            <th></th>
+            <th><div class="ui blue tiny label">{% trans 'All' %} <div class="detail">{{ payments_list.count }}</div></div></th>
+            <th></th>
+        </tr>
+    </tfoot>
+</table>
