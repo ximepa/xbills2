@@ -20,7 +20,7 @@
         {% for payment in payments %}
         <tr>
             <td>{{ payment.id }}</td>
-            <td><a href="{% url 'core:clients' %}{{ payment.uid.id }}">{{ payment.uid.login }}</a></td>
+            <td><a href="{% url 'core:client_payments' payment.uid__id %}">{{ payment.uid__login }}</a></td>
             <td>{{ payment.date }}</td>
             <td>{{ payment.dsc }}</td>
             <td>{{ payment.sum }}</td>
@@ -29,10 +29,10 @@
             {% else %}
                 <td>{{ payment.last_deposit }}</td>
             {% endif %}
-            <td>{% pay_type  payment.method %}</td>
-            <td>{{ payment.aid.login }}</td>
-            <td>{{ payment.uid.id }}</td>
-            <td><a href="{% url 'core:client_payments' payment.uid.id %}?del={{ payment.id }}" onclick="return confirm('{% trans 'Delete' %}?');"><i class="fa fa-remove"></i></a></td>
+            <td>{{ payment.method }}</td>
+            <td>{{ payment.aid__login }}</td>
+            <td>{{ payment.uid__id }}</td>
+            <td><a href="{% url 'core:client_payments' payment.uid__id %}?del={{ payment.id }}" onclick="return confirm('{% trans 'Delete' %}?');"><i class="fa fa-remove"></i></a></td>
         </tr>
         {% endfor %}
     </tbody>

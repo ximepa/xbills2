@@ -24,7 +24,7 @@
         {% for f in fees %}
         <tr>
             <td>{{ f.id }}</td>
-            <td><a href="{% url 'core:index' %}?index=clients&uid={{ f.uid.id }}">{{ f.uid.login }}</a></td>
+            <td><a href="{% url 'core:client_fees' f.uid__id %}">{{ f.uid__login }}</a></td>
             <td>{{ f.date }}</td>
             <td>{{ f.dsc }}</td>
             <td>{{ f.sum }}</td>
@@ -33,9 +33,9 @@
             {% else %}
                 <td>{{ f.last_deposit }}</td>
             {% endif %}
-            <td>{{ f.method.name }}</td>
-            <td>{{ f.aid.login }}</td>
-            <td>{{ f.uid.id }}</td>
+            <td>{{ f.method__name }}</td>
+            <td>{{ f.aid__login }}</td>
+            <td>{{ f.uid__id }}</td>
             <td><i class="fa fa-remove"></i></td>
         </tr>
         {% endfor %}

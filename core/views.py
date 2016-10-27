@@ -5,7 +5,7 @@ from django.shortcuts import render, HttpResponseRedirect, HttpResponse, render_
 from django.template import RequestContext
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Q
+from django.db.models import Sum, Q, Count
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from dv.helpers import Hangup
@@ -37,51 +37,10 @@ def index(request, settings=settings):
     ip_list_r = []
     ip_list_db = []
     sys = platform.platform()
-    if 'pay_now' in request.GET:
-        payments_now = Payment.objects.filter(date__icontains=datetime.datetime.now().date()).last()
-        if payments_now != None:
-            pay_list = {}
-            pay_list['pay_now'] = payments_now.sum, payments_now.dsc, payments_now.uid.login, str(payments_now.uid.id), payments_now.aid.login
-            res_json = json.dumps(pay_list)
-            return HttpResponse(res_json)
-    if 'pay' in request.GET:
-        pay_list = {}
-        result_day_pay = 0
-        result_week_pay = 0
-        payments_today = Payment.objects.filter(date__icontains=datetime.datetime.now().date())
-        payments_week = Payment.objects.filter(date__lte=datetime.datetime.now().date() + datetime.timedelta(days=1), date__gte=(datetime.datetime.now().date() + datetime.timedelta(days=1)) - datetime.timedelta(weeks=1))
-        payments_month = Payment.objects.filter(date__year=datetime.datetime.now().year, date__month=datetime.datetime.now().month)
-        pay_list['pay_day'] = payments_today.aggregate(Sum('sum')), payments_today.count()
-        pay_list['pay_week'] = payments_week.aggregate(Sum('sum')), payments_week.count()
-        pay_list['pay_month'] = payments_month.aggregate(Sum('sum')), payments_month.count()
-        res_json = json.dumps(pay_list)
-        return HttpResponse(res_json)
     cpu_load_list = psutil.cpu_percent(interval=1, percpu=True)
     root_disk_usage = psutil.disk_usage('/')
-    if 'process' in request.GET:
-        try:
-            list = []
-            for proc in psutil.process_iter():
-                pinfo = {}
-                pinfo['pid'] = proc.pid
-                pinfo['name'] = proc.name()
-                pinfo['status'] = proc.status()
-                pinfo['cpu'] = proc.cpu_percent().real
-                list.append(pinfo)
-            res_json = json.dumps(list)
-            return HttpResponse(res_json)
-        except Exception:
-            pass
-    # if helpers.module_check('claims'):
-    #     from claims.models import Claims, Queue
-    #     queue = Queue.objects.all()
-    #     claims_list_opened = Claims.objects.filter(state=1).count()
-    #     claims_list_closed = Claims.objects.filter(state=2).count()
-    #     list = []
-    #     list1 = []
-    #     for q in queue:
-    #         list.append({'name': q.name, 'opened': q.claims.filter(state=1).count(), 'closed': q.claims.filter(state=2).count(), 'all': q.claims.all().count()})
-    #     list1.append({'all_opened': claims_list_opened, 'all_closed': claims_list_closed})
+    for cpu in cpu_load_list:
+        print cpu
     return render(request, 'index.html', locals())
 
 @login_required()
@@ -643,7 +602,8 @@ def client_fees(request, uid):
 def clients(request):
     filter_by = request.GET.get('users_status', '0')
     order_by = request.GET.get('order_by', 'login')
-    users_list = User.objects.all().order_by(order_by)
+    # users_list = User.objects.all().order_by(order_by)
+    users_list = User.objects.values('id', 'login', 'user_pi__fio', 'bill__deposit', 'credit', 'disable', 'deleted').order_by(order_by)
     if filter_by == '1':
         users_list = users_list.filter(bill__deposit__gte=0, disable=False, deleted=False,)
     if filter_by == '2':
@@ -691,7 +651,7 @@ def clients(request):
 @login_required()
 def payments(request):
     order_by = request.GET.get('order_by', '-date')
-    payments_list = Payment.objects.all().order_by(order_by)
+    payments_list = Payment.objects.values('id', 'uid__login', 'uid__id', 'date', 'dsc', 'last_deposit', 'aid__login', 'method').order_by(order_by)
     paginator = Paginator(payments_list, settings.PAYMENTS_PER_PAGE)
     page = request.GET.get('page', 1)
     try:
@@ -726,7 +686,7 @@ def payments(request):
 def fees(request):
     out_sum = 0
     order_by = request.GET.get('order_by', '-date')
-    fees_list = Fees.objects.all().order_by(order_by)
+    fees_list = Fees.objects.values('id', 'uid__id', 'uid__login', 'date', 'dsc', 'sum', 'last_deposit', 'method__name', 'aid__login', ).order_by(order_by)
     paginator = Paginator(fees_list, settings.FEES_PER_PAGE)
     page = request.GET.get('page', 1)
     # for ex_fees in fees_list:
@@ -758,7 +718,7 @@ def fees(request):
 def company(request):
     r_company = 1
     order_by = request.GET.get('order_by', 'name')
-    m_company = Company.objects.all().order_by(order_by)
+    m_company = Company.objects.values('id', 'name', 'bill__deposit', 'credit', 'registration', 'disable').annotate(clients=Count('clients')).order_by(order_by)
     paginator = Paginator(m_company, 50)
     page = request.GET.get('page', 1)
     try:
@@ -800,7 +760,7 @@ def company(request):
 @login_required()
 def group(request):
     order_by = request.GET.get('order_by', 'id')
-    group = Group.objects.all().order_by(order_by)
+    group = Group.objects.values('id', 'name', 'descr').annotate(user_group=Count('user_group')).order_by(order_by)
     paginator = Paginator(group, 50)
     page = request.GET.get('page', 1)
     print request.GET

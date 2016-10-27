@@ -4,7 +4,10 @@ from core.models import Admin
 import json
 import datetime
 from threading import Thread
-import time
+from django.db import connection
+from time import time, sleep
+from operator import add
+import re
 import psutil
 #from ws4redis.publisher import RedisPublisher
 #from ws4redis.redis_store import RedisMessage
@@ -78,7 +81,7 @@ class ThreadingDashboardMiddleware(object):
         psutil.boot_time()
         boot_time = datetime.datetime.fromtimestamp(psutil.boot_time())
         while True:
-            time.sleep(7)
+            sleep(7)
             # Do something
             try:
                 list = []
@@ -109,9 +112,3 @@ class ThreadingDashboardMiddleware(object):
                 #time.sleep(1)
             except:
                 pass
-
-
-
-
-
-

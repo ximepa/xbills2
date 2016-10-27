@@ -141,27 +141,6 @@ def active_startwith_multiple(request, *args):
             return 'active'
     return ''
 
-
-@register.simple_tag
-def user_company(id):
-    user_count = User.objects.filter(company_id=id).count()
-    return user_count
-
-
-@register.simple_tag
-def user_group(id):
-    user_group = User.objects.filter(gid=id).count()
-    return user_group
-
-
-@register.simple_tag
-def status(value):
-    if value != None:
-        stat = 'Enable'
-    else:
-        stat = 'Disable'
-    return stat
-
 @register.simple_tag
 def sec_to_time(sec):
     return str(datetime.timedelta(seconds=sec))

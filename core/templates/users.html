@@ -106,11 +106,11 @@
                             {% for user in users %}
                             <tr>
                                 <td><a href="{% url 'core:client' user.id %}">{{ user.login }}</a></td>
-                                <td>{{ user.user_pi.fio }}</td>
-                                {% if user.bill.deposit < 0 %}
-                                    <td><span style="color: red">{{ user.bill.deposit }}</span></td>
+                                <td>{{ user.user_pi__fio }}</td>
+                                {% if user.bill__deposit < 0 %}
+                                    <td><span style="color: red">{{ user.bill__deposit }}</span></td>
                                 {% else %}
-                                    <td>{{ user.bill.deposit }}</td>
+                                    <td>{{ user.bill__deposit }}</td>
                                 {% endif %}
                                 {% if user.credit > 0 %}
                                     <td><span style="color: green">{{ user.credit }}</span></td>
@@ -127,8 +127,8 @@
                                 {% else %}
                                     <td><span class="ui tiny green label">{% trans 'No' %}</span></td>
                                 {% endif %}
-                                <td><a href="{% url 'core:client_payments' user.id %}"><i class="fa fa-euro"></i></a></td>
-                                <td><a href="{% url 'core:client_fees' user.id %}"><i class="fa fa-remove"></i></a></td>
+                                <td><a href="{% url 'core:client_payments' user.id %}"><i class="credit card alternative icon"></i></a></td>
+                                <td><a href="{% url 'core:client_fees' user.id %}"><i class="euro icon"></i></a></td>
                             </tr>
                             {% endfor %}
                         </tbody>
