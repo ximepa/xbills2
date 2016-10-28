@@ -145,10 +145,10 @@ def active_startwith_multiple(request, *args):
 def sec_to_time(sec):
     return str(datetime.timedelta(seconds=sec))
 
-@register.simple_tag
-def tp_name(id):
-    name = Tp.objects.get(id=id)
-    return name.name
+@register.filter
+def sum_total(your_dict_list):
+    print your_dict_list.object_list
+    return sum(d['sum'] for d in your_dict_list)
 
 @register.simple_tag
 def pay_type(id):

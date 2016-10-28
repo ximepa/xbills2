@@ -92,9 +92,9 @@
                         <td>{% sizify s.recv  %}</td>
                         <td>{% ip_convert s.ip %}</td>
                         <td>{{ s.CID }}</td>
-                        <td>{% tp_name s.tp_id %}</td>
+                        <td>{{ s.tp__name }}</td>
                         <td>{{ s.sum }}</td>
-                        <td>{{ s.nas_info.name }}</td>
+                        <td>{{ s.nas__name }}</td>
                     </tr>
                     {% endfor %}
                 </tbody>

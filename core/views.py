@@ -1,11 +1,13 @@
 # -*- encoding: utf-8 -*-
 import csv
 import json
+
+from django.db.models.expressions import F
 from django.shortcuts import render, HttpResponseRedirect, HttpResponse, render_to_response, redirect
 from django.template import RequestContext
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Q, Count
+from django.db.models import Sum, Q, Count, FloatField
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from dv.helpers import Hangup
@@ -119,7 +121,7 @@ def client_statistics(request, uid):
     except User.DoesNotExist:
         return render(request, '404.html', locals())
     order_by = request.GET.get('order_by', '-start')
-    user_statistics = Dv_log.objects.filter(uid=uid).order_by(order_by)
+    user_statistics = Dv_log.objects.values('start', 'duration', 'sent', 'recv', 'ip', 'CID', 'tp__name', 'sum', 'nas__name').filter(uid=uid).order_by(order_by)
     paginator = Paginator(user_statistics, settings.USER_ERRORS_PER_PAGE)
     page = request.GET.get('page', 1)
     try:
@@ -493,8 +495,6 @@ def client_payments(request, uid):
     except User.DoesNotExist:
         return render(request, '404.html', locals())
     payments_list = Payment.objects.values('id', 'uid__login', 'uid__id', 'date', 'dsc', 'sum', 'last_deposit', 'aid__login', 'method').filter(uid=client.id).order_by(order_by)
-    for payment in payments_list:
-        out_sum += payment['sum']
     paginator = Paginator(payments_list, settings.PAYMENTS_PER_PAGE)
     page = request.GET.get('page', 1)
     if helpers.module_check('olltv'):
@@ -550,9 +550,11 @@ def client_fees(request, uid):
         client = User.objects.get(id=uid)
     except User.DoesNotExist:
         return render(request, '404.html', locals())
-    fees_list = Fees.objects.filter(uid=client.id).order_by(order_by)
-    for ex_fees in fees_list:
-        out_sum = out_sum + ex_fees.sum
+    fees_list = Fees.objects.values(
+        'id', 'uid__id', 'uid__login', 'date', 'dsc', 'sum', 'last_deposit', 'method__name', 'aid__login',
+    ).filter(uid=client.id).order_by(order_by)
+    # for ex_fees in fees_list:
+    #     out_sum = out_sum + ex_fees.sum
     paginator = Paginator(fees_list, settings.FEES_PER_PAGE)
     page = request.GET.get('page', 1)
     try:
