@@ -11,6 +11,13 @@ from django.conf import settings
 __author__ = 'ximepa'
 
 
+def get_or_none(model, *args, **kwargs):
+    try:
+        return model.objects.get(*args, **kwargs)
+    except model.DoesNotExist:
+        return '-'
+
+
 def ip_to_num(ip_addr):
     sets = map(int, ip_addr.split("."))
     return int(sets[0]*256**3 + sets[1]*256**2 + sets[2]*256 + sets[3])
@@ -138,7 +145,7 @@ class Bill(models.Model):
     #linked = models.BooleanField(default=0)
 
     def __unicode__(self):
-        return "%s" % self.deposit
+        return "%s" % self.id
 
     class Meta:
         db_table = 'bills'
@@ -215,6 +222,43 @@ class User(models.Model):
         else:
             return float(b.deposit)
 
+
+    def get_dict(self):
+        try:
+            company = Company.objects.get(id=self.company_id)
+            company = company.name
+        except Company.DoesNotExist:
+            company = None
+        try:
+            gid = Group.objects.get(id=self.gid_id)
+            gid = gid.name
+        except Group.DoesNotExist:
+            gid = None
+        try:
+            if company:
+                bill = Bill.objects.get(company_id=self.company_id)
+            else:
+                bill = Bill.objects.get(id=self.bill_id)
+            bill = bill.id
+        except Group.DoesNotExist:
+            bill = None
+        return {
+            'uid': self.id,
+            'login': self.login,
+            'disable': self.disable,
+            'company': company,
+            'gid': gid,
+            'bill': bill,
+            'credit': self.credit,
+            'credit_date': self.credit_date,
+            'reduction': self.reduction,
+            'reduction_date': self.reduction_date,
+            'activate': self.activate,
+            'expire': self.expire,
+            'deleted': self.deleted,
+            'registration': self.registration,
+        }
+
     # @staticmethod
     # def export_to_csv(queryset, name):
     #     from django.shortcuts import HttpResponse
@@ -260,7 +304,7 @@ class Group(models.Model):
     descr = models.CharField(max_length=200)
 
     def __unicode__(self):
-        return str(self.id) + ':' + self.name
+        return self.name
 
     class Meta:
         db_table = 'groups'

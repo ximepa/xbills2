@@ -1,5 +1,7 @@
 import random
 import csv
+from xml.dom.minidom import Document
+
 from django.conf import settings
 import os
 from django.shortcuts import HttpResponse

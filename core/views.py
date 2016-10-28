@@ -23,6 +23,7 @@ import helpers
 import platform
 import psutil
 import datetime
+import dicttoxml
 from django.core import serializers
 
 
@@ -480,6 +481,10 @@ def client(request, uid):
         #     olltv_exist = False
     if 'show_password' in request.GET:
         show_password = True
+    if 'xml' in request.GET:
+        print client.get_dict()
+        xml = dicttoxml.dicttoxml(client.get_dict(), custom_root='client')
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     # if helpers.module_check('claims'):
     #     from claims.models import Claims
     #     claims = Claims.objects.filter(uid=uid, state=1)
@@ -523,7 +528,6 @@ def client_payments(request, uid):
     pre_end = payments.paginator.num_pages - 2
     if 'del' in request.GET:
         del_payment = Payment.objects.get(id=request.GET['del'])
-        print request.GET
         log = AdminLog(
             actions='test',
             datetime=datetime.datetime.now(),
@@ -535,8 +539,8 @@ def client_payments(request, uid):
         #print log.admin
         #del_payment.delete()
     if 'xml' in request.GET:
-        xml_data = serializers.serialize("xml", payments)
-        return render(request, 'base.xml', {'data': xml_data}, content_type="text/xml")
+        xml = dicttoxml.dicttoxml(payments)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     if 'csv' in request.GET:
         return helpers.export_to_csv(request, payments, fields=('id', 'uid'), name='login')
     return render(request, 'user_payments.html', locals())
@@ -590,8 +594,8 @@ def client_fees(request, uid):
         writer.writerow(['', out_sum])
         return response
     if 'xml' in request.GET:
-        xml_data = serializers.serialize("xml", fees)
-        return render(request, 'base.xml', {'data': xml_data}, content_type="text/xml")
+        xml = dicttoxml.dicttoxml(fees)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     if 'csv' in request.GET:
         return helpers.export_to_csv(request, fees, fields=('id', 'uid'), name='login')
     return render(request, 'user_fees.html', locals())
@@ -639,8 +643,8 @@ def clients(request):
         page_list = p
     pre_end = users.paginator.num_pages - 2
     if 'xml' in request.GET:
-        xml_data = serializers.serialize("xml", users)
-        return render(request, 'base.xml', {'data': xml_data}, content_type="text/xml")
+        xml = dicttoxml.dicttoxml(users)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     if 'csv' in request.GET:
         return helpers.export_to_csv(request, users, fields=('id', 'login'), name='login')
     return render(request, 'users.html', locals())
@@ -673,8 +677,8 @@ def payments(request):
         page_list = p
     pre_end = payments.paginator.num_pages - 2
     if 'xml' in request.GET:
-        xml_data = serializers.serialize("xml", payments)
-        return render(request, 'base.xml', {'data': xml_data}, content_type="text/xml")
+        xml = dicttoxml.dicttoxml(payments)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     if 'csv' in request.GET:
         return helpers.export_to_csv(request, payments, fields=('id', 'sum'), name='payments')
     return render(request, 'payments.html', locals())
@@ -709,6 +713,11 @@ def fees(request):
     for p in page_range:
         page_list = p
     pre_end = fees.paginator.num_pages - 2
+    if 'xml' in request.GET:
+        xml = dicttoxml.dicttoxml(fees)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
+    if 'csv' in request.GET:
+        return helpers.export_to_csv(request, fees, fields=('id', 'sum'), name='payments')
     return render(request, 'fees.html', locals())
 
 
@@ -740,8 +749,8 @@ def company(request):
         page_list = p
     pre_end = company.paginator.num_pages - 2
     if 'xml' in request.GET:
-        xml_data = serializers.serialize("xml", company)
-        return render(request, 'base.xml', {'data': xml_data}, content_type="text/xml")
+        xml = dicttoxml.dicttoxml(company)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     if 'csv' in request.GET:
         return helpers.export_to_csv(request, company, fields=('id', 'bill'), name='bill')
     if 'change' in request.GET:
@@ -761,7 +770,6 @@ def group(request):
     group = Group.objects.values('id', 'name', 'descr').annotate(user_group=Count('user_group')).order_by(order_by)
     paginator = Paginator(group, 50)
     page = request.GET.get('page', 1)
-    print request.GET
     try:
         group = paginator.page(page)
     except PageNotAnInteger:
@@ -783,8 +791,8 @@ def group(request):
         page_list = p
     pre_end = group.paginator.num_pages - 2
     if 'xml' in request.GET:
-        xml_data = serializers.serialize("xml", company)
-        return render(request, 'base.xml', {'data': xml_data}, content_type="text/xml")
+        xml = dicttoxml.dicttoxml(group)
+        return render(request, 'base.xml', {'data': xml}, content_type="text/xml")
     if 'csv' in request.GET:
         return helpers.export_to_csv(request, company, fields=('id', 'bill'), name='bill')
     if 'user_list' in request.GET:
@@ -848,11 +856,9 @@ def administrators(request):
             admin = Admin.objects.get(id=request.POST['uid'])
             # admin.delete()
         elif 'admin_add' in request.POST:
-            print 'admin_add'
-            print request.POST
             admin_form = AdministratorForm(request.POST)
             if admin_form.is_valid():
-                print 'valid'
+                pass
                 # admin_form.save()
     return render(request, 'administrators.html', locals())
 
@@ -868,7 +874,6 @@ def administrator_edit(request, uid):
         if request.method == 'POST':
             admin_form = AdministratorForm(request.POST, instance=admin)
             if admin_form.is_valid():
-                print admin_form
                 # admin_form.save()
                 return redirect('core:administrators')
         return render(request, 'admin_edit.html', locals())
@@ -879,7 +884,6 @@ def administrators_add(request):
     # admins = Admin.objects.all()
     admin_form = AdministratorAddForm()
     if request.method == 'POST':
-        print request.POST
         admin_form = AdministratorAddForm(request.POST)
         if admin_form.is_valid():
             # admin_form = admin_form.save(commit=False)
@@ -901,7 +905,6 @@ def test(request, template=".html"):
 def chat(request):
     admins = helpers.get_online()
     if request.method == 'POST' and request.POST != '':
-        print request.POST
         if request.POST['message']:
             pass
             # message = RedisMessage('<span style="">%s(%s): %s</span>' % (request.user.login, datetime.datetime.now().strftime("%H:%M:%S"), request.POST['message']))  # create a welcome message to be sent to everybody
@@ -920,6 +923,5 @@ def monitoring_servers(request):
         servers_list = sorted(servers_list, key=lambda k: k['id'], reverse=True)
     if 'list' in request.GET:
         dv = Dv_calls.objects.filter(nas_id=request.GET['list'])
-        print dv
     return render(request, 'monitoring_servers.html', locals())
 
