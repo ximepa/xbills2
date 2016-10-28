@@ -69,16 +69,6 @@
                             <i class="fa fa-comment"></i>
                         </div>
                     </div>
-                    <div class="right menu">
-                        <div class="ui dropdown item">
-                            {{ request.user.login }}
-                            <i class="dropdown icon"></i>
-                            <div class="menu">
-                                <a class="item" href="{% url 'core:administrator_edit' request.user %}">{% trans 'Profile' %}</a>
-                                <a class="item" href="{% url 'core:logout' %}">{% trans 'Logout' %}</a>
-                            </div>
-                        </div>
-                    </div>
                     {% block client_options %}
                     {% endblock client_options %}
                 </div>
@@ -100,6 +90,16 @@
                                                 <div class="content">
                                                     <i class="user icon"></i>{% trans 'Username' %}:
                                                     <span style="font-weight: bold">{{ client.login }}</span>
+                                                </div>
+                                            </div>
+                                            <div class="item">
+                                                <div class="content">
+                                                    <i class="hashtag icon"></i>{% trans 'Password' %}:
+                                                    {% if not show_password %}
+                                                        <a href="?show_password=True">show</a>
+                                                    {% else %}
+                                                        <span style="font-weight: bold">{{ client.get_hash_password }}</span>
+                                                    {% endif %}
                                                 </div>
                                             </div>
                                             {% if client.dv %}

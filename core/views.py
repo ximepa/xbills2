@@ -414,6 +414,7 @@ def search(request):
 
 @login_required()
 def client(request, uid):
+    page = request.GET.get('page', None)
     if 'hangup' in request.GET:
         hangup = Hangup(request.GET['nas_id'], request.GET['port_id'], request.GET['acct_session_id'], request.GET['user_name'])
     try:
@@ -424,17 +425,20 @@ def client(request, uid):
         disable = 0
     else:
         disable = 1
-    client_form = ClientForm(instance=client)
-    if 'client_form' in request.POST:
-        client_form = ClientForm(request.POST, instance=client)
-        print client_form
-        if client_form.is_valid():
-            print 'oky'
-        print client_form.errors
-    dv = Dv.objects.get(user=uid)
-    dv_form = DvForm(instance=dv, initial={'ip': num_to_ip(dv.ip), 'netmask': num_to_ip(dv.netmask)})
-    user_pi = UserPi.objects.get(user_id=uid)
-    user_pi_form = UserPiForm(instance=user_pi, initial={'district': user_pi.street.district_id})
+    if page == None:
+        client_form = ClientForm(instance=client)
+        if 'client_form' in request.POST:
+            client_form = ClientForm(request.POST, instance=client)
+            print client_form
+            if client_form.is_valid():
+                print 'oky'
+            print client_form.errors
+    if page == 'dv':
+        dv = Dv.objects.get(user=uid)
+        dv_form = DvForm(instance=dv, initial={'ip': num_to_ip(dv.ip), 'netmask': num_to_ip(dv.netmask)})
+    if page == 'user_pi':
+        user_pi = UserPi.objects.get(user_id=uid)
+        user_pi_form = UserPiForm(instance=user_pi, initial={'district': user_pi.street.district_id})
     if 'user_pi' in request.POST:
         user_pi_form = UserPiForm(request.POST, instance=user_pi)
         print user_pi_form
@@ -473,9 +477,7 @@ def client(request, uid):
         # except Iptv.DoesNotExist:
         #     olltv_exist = False
     if 'show_password' in request.GET:
-        user_password = client.get_hash_password
-    else:
-        user_password = ''
+        show_password = True
     # if helpers.module_check('claims'):
     #     from claims.models import Claims
     #     claims = Claims.objects.filter(uid=uid, state=1)
